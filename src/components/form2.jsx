@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import icon1 from "../assets/edit.png";
 import Notification from "./Notification";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -13,13 +12,13 @@ import {
   FaPlusCircle,
   FaSignOutAlt,
   FaFileContract,
-  FaBalanceScale,
-  FaSeedling,
-  FaFlask,
-  FaRuler,
   FaTimes,
   FaBars,
+  FaCheckCircle,
+  FaCloudUploadAlt
 } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import Loader from "./Loader";
 
 const RegisterStockForm = () => {
   const [formData, setFormData] = useState({
@@ -32,27 +31,19 @@ const RegisterStockForm = () => {
     unitPrice: "",
     dispatched: "",
     contract: "",
-    MC: "",
-    harm: "",
-    testWeight: "",
-    grade: "",
   });
 
   const [error, setError] = useState("");
-  const [color, setColor] = useState("bg-red-500");
   const [loading, setLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
-  const [contract, setContract] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [contracts, setContracts] = useState([]);
 
-
-
-  const triggerNotification = (message, color) => {
-    setNotificationMessage(message);
+  const triggerNotification = (message, type = "error") => {
+    setNotificationMessage({ message, type });
     setShowNotification(true);
-    setColor(color);
   };
 
   const handleNotificationClose = () => {
@@ -65,93 +56,44 @@ const RegisterStockForm = () => {
   };
 
   const handleDateChange = (date) => {
-    const formattedDate = format(date, "dd/MM/yyyy");
-    setFormData({ ...formData, entryDate: formattedDate });
+    setFormData({ ...formData, entryDate: date });
   };
 
-  const closeModal2 = () => {
-    setModalOpen(false);
-    setLoading(false); // Stop loading if modal is closed
+  const handleFindContracts = async () => {
+    try {
+      const token = localStorage.getItem("ACCESS_TOKEN");
+      const res = await fetch("https://stock-managment-2.onrender.com/contracts", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.status === 200) setContracts(data.contracts);
+    } catch (error) {
+      console.log("Fetching contracts failed:", error.message);
+    }
   };
 
-
-    //find the contract for entering the product
-    const handleFindContract = async () => {
-      try {
-        const token = localStorage.getItem("ACCESS_TOKEN");
-        if (!token) {
-          console.log("No token found");
-        }
-    
-        const res = await fetch("https://stock-managment-2.onrender.com/contracts", {  // ✅ Add `await` 
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-    
-        const data = await res.json();
-    
-        if (res.status === 200) {
-          setContract(data.contracts);
-          console.log(data.contracts);
-        }
-      } catch (error) {
-        console.log("Fetching contracts failed:", error.message);
-      }
-    };
-    
-
-    useEffect(()=>{
-      handleFindContract();
-    },[])
+  useEffect(() => {
+    handleFindContracts();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setModalOpen(true); // Open the modal when loading starts
+    setModalOpen(true);
 
-    const { entryDate, truck, wBill, originDestination, product, entry, dispatched, unitPrice, contract, MC, harm, testWeight, grade } = formData;
+    const { product, entry, dispatched, unitPrice } = formData;
 
-    // Input validation
     if (!product) {
-      triggerNotification("Product required", "bg-red-500");
-      setLoading(false);
-      setModalOpen(false); // Close modal on error
+      triggerNotification("Product name is required");
       return;
-    }
-
-    if (!entry && !dispatched) {
-      triggerNotification("Specify either entry or dispatched quantity.", "bg-red-500");
-      setLoading(false);
-      setModalOpen(false); // Close modal on error
-      return;
-    }
-
-    if (entry && dispatched) {
-      triggerNotification("Only one of entry or dispatched can be specified.", "bg-red-500");
-      setLoading(false);
-      setModalOpen(false); // Close modal on error
-      return;
-    }
-
-    if (!unitPrice) {
-      setError("Unit price is required.");
-      triggerNotification("Unit price is required.", "bg-red-500");
-      setLoading(false);
-      setModalOpen(false); // Close modal on error
-      return;
-    }
-
-    const token = localStorage.getItem("ACCESS_TOKEN");
-    if (!token) {
-      setLoading(false);
-      setModalOpen(false); // Close modal on error
-      return triggerNotification("Token has expired", "bg-red-500");
     }
 
     try {
+      const token = localStorage.getItem("ACCESS_TOKEN");
       const response = await fetch("https://stock-managment-2.onrender.com/stock/register", {
         method: "POST",
         headers: {
@@ -159,26 +101,17 @@ const RegisterStockForm = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          entryDate,
-          truck,
-          wBill,
-          originDestination,
-          product:product.charAt(0).toUpperCase() + product.slice(1).toLowerCase(),
+          ...formData,
+          product: product.charAt(0).toUpperCase() + product.slice(1).toLowerCase(),
           entry: entry ? parseInt(entry, 10) : 0,
           dispatched: dispatched ? parseInt(dispatched, 10) : 0,
           unitPrice: parseFloat(unitPrice),
-          contract,
-          MC,
-          harm,
-          testWeight,
-          grade,
         }),
       });
 
       const data = await response.json();
-
       if (response.ok) {
-        triggerNotification("Stock registered successfully", "bg-green-500");
+        triggerNotification("Stock dispatched successfully!", "success");
         setFormData({
           entryDate: "",
           truck: "",
@@ -189,92 +122,79 @@ const RegisterStockForm = () => {
           dispatched: "",
           unitPrice: "",
           contract: "",
-          MC: "",
-          harm: "",
-          testWeight: "",
-          grade: "",
         });
       } else {
-        triggerNotification(data.error || "An error occurred.", "bg-red-500");
+        triggerNotification(data.error || "Dispatch failed");
       }
     } catch (err) {
-      triggerNotification("Server error. Please try again later.", "bg-red-500");
-      console.log(err.message);
+      triggerNotification("Network error. Please try again.");
     } finally {
       setLoading(false);
-      setModalOpen(false); // Close modal when loading is complete
+      setModalOpen(false);
     }
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="flex max-w-6xl mx-auto p-5 bg-white rounded-xl shadow-2xl">
-      {/* Main Form */}
+    <div className="flex max-w-7xl mx-auto p-6 bg-white rounded-2xl shadow-xl">
       <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "pr-8" : "pr-0"}`}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 border-b pb-4">
-          <div className="flex items-center">
-            <img
-              src={icon1}
-              alt="Register Stock"
-              className="w-12 h-12 mr-4 cursor-pointer transform hover:scale-110 transition-transform duration-200"
-            />
-            <h2 className="text-[24px] font-semibold text-blue-600">Dispatch Stock</h2>
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <FaCloudUploadAlt className="w-6 h-6 text-blue-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800">Stock Dispatch Portal</h1>
           </div>
           <button
             onClick={toggleSidebar}
-            className="p-2 text-gray-600 hover:text-blue-600 transition-colors duration-200"
+            className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
           >
             {isSidebarOpen ? <FaTimes className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
+        {/* Form Grid */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Entry Date */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
+            {/* Date Picker */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
                 <FaCalendarAlt className="mr-2 text-blue-500" />
-                Dispatch Date <span className="text-red-500 ml-1">*</span>
+                Dispatch Date
               </label>
               <DatePicker
-                selected={
-                  formData.entryDate
-                    ? new Date(formData.entryDate.split("/").reverse().join("-"))
-                    : null
-                }
-                onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="DD/MM/YYYY"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-              />
+  selected={formData.entryDate || null}
+  onChange={handleDateChange}
+  dateFormat="dd/MM/yyyy"
+  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+  placeholderText="Select date"
+/>
+
             </div>
 
-            {/* Truck */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
+            {/* Truck Details */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
                 <FaTruck className="mr-2 text-blue-500" />
-                Truck <span className="text-red-500 ml-1">*</span>
+                Truck Details
               </label>
               <input
                 type="text"
                 name="truck"
                 value={formData.truck}
                 onChange={handleChange}
-                placeholder="Enter truck details"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
+                placeholder="Enter truck number"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
             </div>
 
-            {/* Waybill */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
+            {/* Waybill Number */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
                 <FaBarcode className="mr-2 text-blue-500" />
-                Waybill <span className="text-red-500 ml-1">*</span>
+                Waybill Number
               </label>
               <input
                 type="text"
@@ -282,31 +202,36 @@ const RegisterStockForm = () => {
                 value={formData.wBill}
                 onChange={handleChange}
                 placeholder="Enter waybill number"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
             </div>
 
-            {/* Origin/Destination */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
-                <FaMapMarkedAlt className="mr-2 text-blue-500" />
-                Origin/Destination <span className="text-red-500 ml-1">*</span>
+            {/* Contract Selection */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
+                <FaFileContract className="mr-2 text-blue-500" />
+                Contract
               </label>
-              <input
-                type="text"
-                name="originDestination"
-                value={formData.originDestination}
+              <select
+                name="contract"
+                value={formData.contract}
                 onChange={handleChange}
-                placeholder="Enter origin or destination"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-              />
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              >
+                <option value="">Select contract</option>
+                {contracts.map(contract => (
+                  <option key={contract._id} value={contract.operatorName}>
+                    {contract.operatorName}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Product */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
+            {/* Product Details */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
                 <FaProductHunt className="mr-2 text-blue-500" />
-                Product <span className="text-red-500 ml-1">*</span>
+                Product Name
               </label>
               <input
                 type="text"
@@ -314,171 +239,94 @@ const RegisterStockForm = () => {
                 value={formData.product}
                 onChange={handleChange}
                 placeholder="Enter product name"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
             </div>
 
-            {/* Entry Quantity */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
+            {/* Quantity */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
                 <FaPlusCircle className="mr-2 text-blue-500" />
-                Dipatch Quantity <span className="text-red-500 ml-1">*</span>
+                Dispatch Quantity
               </label>
               <input
                 type="number"
                 name="dispatched"
                 value={formData.dispatched}
                 onChange={handleChange}
-                placeholder="Enter dispatch quantity"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
+                placeholder="Enter quantity"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
             </div>
 
             {/* Unit Price */}
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
                 <FaSignOutAlt className="mr-2 text-blue-500" />
-                Unit Price <span className="text-red-500 ml-1">*</span>
+                Unit Price
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  name="unitPrice"
+                  value={formData.unitPrice}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Destination */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-600">
+                <FaMapMarkedAlt className="mr-2 text-blue-500" />
+                Destination
               </label>
               <input
-                type="number"
-                name="unitPrice"
-                value={formData.unitPrice}
+                type="text"
+                name="originDestination"
+                value={formData.originDestination}
                 onChange={handleChange}
-                placeholder="Enter unit price"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
+                placeholder="Enter destination"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               />
             </div>
           </div>
 
           {/* Submit Button */}
-          <div className="mt-8 flex justify-center">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full md:w-[400px] py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-            >
-              Dispatch Stock
-            </button>
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg transition-all hover:shadow-xl"
+          >
+            {loading ? "Processing..." : "Dispatch Stock"}
+          </motion.button>
         </form>
 
         {/* Notification */}
-        {showNotification && (
-          <Notification
-            message={notificationMessage}
-            color={color}
-            duration={5000}
-            onClose={handleNotificationClose}
-          />
-        )}
-      </div>
+        <AnimatePresence>
+          {showNotification && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-6 right-6"
+            >
+              <Notification
+                message={notificationMessage.message}
+                type={notificationMessage.type}
+                onClose={handleNotificationClose}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Quality Assessment Sidebar */}
-      <div
-        className={`w-1/3 pl-8 border-l border-gray-200 transition-all duration-300 ${
-          isSidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
-        }`}
-      >
-        <h2 className="text-[24px] font-semibold text-blue-600 mb-8">Quality Assessment</h2>
-        <div className="space-y-6">
-{/* Contract */}
-{/* Contract */}
-<div className="flex flex-col">
-  <label
-    htmlFor="contract"
-    className="mb-2 text-sm font-medium text-gray-700 flex items-center"
-  >
-    <FaFileContract className="mr-2 text-blue-500" />
-    Contract
-  </label>
-
-  <select
-    id="contract"
-    name="contract"
-    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-    value={formData.contract}
-    onChange={(e) => setFormData({ ...formData, contract: e.target.value })}
-  >
-    <option value="" disabled>
-      Select a contract
-    </option>
-    {(Array.isArray(contract) ? contract : []).map((contra) => (
-      <option value={contra.operatorName} key={contra._id}>
-        {contra.operatorName}
-      </option>
-    ))}
-  </select>
-</div>
-
-
-
-          {/* MC */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
-              <FaBalanceScale className="mr-2 text-blue-500" />
-              MC
-            </label>
-            <input
-              type="number"
-              name="MC"
-              value={formData.MC}
-              onChange={handleChange}
-              placeholder="Enter MC"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-            />
-          </div>
-
-          {/* Harm */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
-              <FaSeedling className="mr-2 text-blue-500" />
-              Harm
-            </label>
-            <input
-              type="text"
-              name="harm"
-              value={formData.harm}
-              onChange={handleChange}
-              placeholder="Enter harm details"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-            />
-          </div>
-
-          {/* Test Weight */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
-              <FaFlask className="mr-2 text-blue-500" />
-              Test Weight
-            </label>
-            <input
-              type="number"
-              name="testWeight"
-              value={formData.testWeight}
-              onChange={handleChange}
-              placeholder="Enter test weight"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-            />
-          </div>
-
-          {/* Grade */}
-          <div className="flex flex-col">
-            <label className="mb-2 text-sm font-medium text-gray-700 flex items-center">
-              <FaRuler className="mr-2 text-blue-500" />
-              Grade
-            </label>
-            <input
-              type="text"
-              name="grade"
-              value={formData.grade}
-              onChange={handleChange}
-              placeholder="Enter grade"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-            />
-          </div>
-        </div>
-      </div>
-
+        {/* Loading Modal */}
+        <AnimatePresence>
       {/* Loading Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -532,7 +380,7 @@ const RegisterStockForm = () => {
                 {/* Animated text */}
                 <div className="space-y-4 text-center">
                   <h3 className="text-2xl font-bold text-gray-800 animate-pulse">
-                    Dispatching Stock
+                    Dispatching  Stock
                     <span className="inline-block ml-1 space-x-1">
                       {Array.from({ length: 3 }).map((_, i) => (
                         <span 
@@ -550,7 +398,7 @@ const RegisterStockForm = () => {
 
                 {/* Cancel button */}
                 <button
-                  onClick={closeModal2}
+                  onClick={()=>setModalOpen(false)}
                   className="mt-6 px-6 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-full transition-all duration-300"
                 >
                   Cancel
@@ -575,6 +423,8 @@ const RegisterStockForm = () => {
           `}</style>
         </div>
       )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };

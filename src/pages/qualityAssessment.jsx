@@ -85,7 +85,7 @@ const QualityAssessment = () => {
     try {
       const token = localStorage.getItem("ACCESS_TOKEN");
       const response = await fetch(
-        "https://stock-managment-2.onrender.com/quality-assessments/download",
+        "https://stock-managment-2.onrender.com/quality/download-excel",
         {
           method: "GET",
           headers: {

@@ -65,8 +65,7 @@ const RegisterStockForm = () => {
   };
 
   const handleDateChange = (date) => {
-    const formattedDate = format(date, "dd/MM/yyyy");
-    setFormData({ ...formData, entryDate: formattedDate });
+    setFormData({ ...formData, entryDate: date });
   };
 
   const closeModal2 = () => {
@@ -242,16 +241,13 @@ const RegisterStockForm = () => {
                 Entry Date <span className="text-red-500 ml-1">*</span>
               </label>
               <DatePicker
-                selected={
-                  formData.entryDate
-                    ? new Date(formData.entryDate.split("/").reverse().join("-"))
-                    : null
-                }
-                onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="DD/MM/YYYY"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-500 transition-colors duration-200"
-              />
+  selected={formData.entryDate || null}
+  onChange={handleDateChange}
+  dateFormat="dd/MM/yyyy"
+  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+  placeholderText="Select date"
+/>
+
             </div>
 
             {/* Truck */}

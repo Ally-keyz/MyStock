@@ -135,7 +135,7 @@ function Dispach() {
           </div>
         )}
       </div>
-      <Modal isOpen={modelOpen} onClose={closeModal2}>
+      <Modal isOpen={modelOpen} onClose={()=>setModelOpen(false)}>
       <div className="">
         <AdvancedStockForm />
       </div>
