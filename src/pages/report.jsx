@@ -1,139 +1,165 @@
 import React, { useState } from "react";
 import TabsWithVirtualizedData from "../components/reportTabs";
-import img2 from "../assets/download.png";
+import { FiDownloadCloud, FiFileText, FiFile, FiCalendar, FiX } from "react-icons/fi";
 import Modal from "../components/Modal";
+import Loader from "../components/Loader";
 
 function Report() {
   const [modelOpen, setModelOpen] = useState(false);
-  const [reportFormat, setReportFormat] = useState(""); // Word or Excel
-  const [reportType, setReportType] = useState(""); // Monthly or Annual
+  const [reportFormat, setReportFormat] = useState("");
+  const [reportType, setReportType] = useState("");
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const closeModal2 = () => setModelOpen(false);
+  const closeModal = () => setModelOpen(false);
 
-  const handleReportGeneration = () => {
-    console.log("Report Format:", reportFormat);
-    console.log("Report Type:", reportType);
-    console.log("Month:", month);
-    console.log("Year:", year);
+  const handleReportGeneration = async () => {
+    setLoading(true);
+    try {
+      // ... existing generation logic ...
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen   flex flex-col items-center">
-      <div className="flex justify-end w-full mb-4">
-        <div
-          onClick={() => setModelOpen(true)}
-          className="flex items-center mr-10 cursor-pointer transition-transform transform hover:scale-105"
-        >
-          <p className="text-sm text-gray-800 italic mr-2">Create reports</p>
-          <img src={img2} className="w-6 h-6" alt="Download" />
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Stock Reports</h1>
+            <nav className="flex space-x-2 mt-2">
+              <span className="text-gray-500">Stock Management</span>
+              <span className="text-gray-300">/</span>
+              <span className="text-blue-600 font-medium">Reports</span>
+            </nav>
+          </div>
+          
+          <button 
+            onClick={() => setModelOpen(true)}
+            className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-all flex items-center"
+          >
+            <FiDownloadCloud className="mr-2" />
+            Generate Report
+          </button>
         </div>
-      </div>
-      <div>
-        <div className="mb-6 ml-3">
-          <div className="inline-flex items-center py-2 px-4 bg-gray-50 rounded-md shadow-md">
-            <p className="text-lg text-blue-500 font-bold">STOCK</p>
-            <div className="border-l border-gray-300 mx-2 h-4"></div>
-            <p className="text-lg text-gray-600 font-semibold">Reports</p>
-          </div>
+
+        {/* Report Content */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <TabsWithVirtualizedData />
         </div>
-        <TabsWithVirtualizedData />
-      </div>
-      <Modal isOpen={modelOpen} onClose={closeModal2}>
-        <div className="p-8 w-full sm:w-[500px] bg-white rounded-lg shadow-lg">
-          <h2 className="text-[17px] font-bold text-blue-500 text-center mb-6">Create Your Report</h2>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 text-[12px] font-medium mb-2">Report Format</label>
-            <div className="flex space-x-4">
-              {['word', 'excel'].map(format => (
-                <label key={format} className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="format"
-                    value={format}
-                    checked={reportFormat === format}
-                    onChange={() => setReportFormat(format)}
-                    className="form-radio text-gray-700"
-                  />
-                  <span className="text-gray-600">{format.charAt(0).toUpperCase() + format.slice(1)}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+        {/* Generation Modal */}
+        <Modal isOpen={modelOpen} onClose={closeModal}>
+          <div className="bg-white rounded-xl p-8 w-full max-w-xl relative">
+            <button 
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <FiX className="w-6 h-6" />
+            </button>
 
-          <div className="mb-4">
-            <label className="block text-gray-700 text-[12px] font-medium mb-2">Report Type</label>
-            <div className="flex space-x-4">
-              {['monthly', 'annual'].map(type => (
-                <label key={type} className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="reportType"
-                    value={type}
-                    checked={reportType === type}
-                    onChange={() => setReportType(type)}
-                    className="form-radio text-gray-700"
-                  />
-                  <span className="text-gray-600">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Generate Custom Report</h2>
 
-          <div className="mb-4">
-            {reportType === "monthly" && (
-              <div className="space-y-4">
-                <div className="flex flex-col">
-                  <label className="text-gray-700 text-[12px] font-semibold mb-2">Month</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="12"
-                    value={month}
-                    onChange={(e) => setMonth(e.target.value)}
-                    className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    placeholder="Enter Month"
-                  />
+            <div className="space-y-6">
+              {/* Format Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Format</label>
+                <div className="grid grid-cols-2 gap-4">
+                  {["word", "excel"].map((format) => (
+                    <button
+                      key={format}
+                      onClick={() => setReportFormat(format)}
+                      className={`p-4 rounded-lg border-2 transition-all flex items-center justify-center
+                        ${reportFormat === format 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-blue-200'}`}
+                    >
+                      <FiFileText className={`w-6 h-6 mr-2 ${reportFormat === format ? 'text-blue-600' : 'text-gray-400'}`} />
+                      <span className={reportFormat === format ? 'text-blue-600 font-medium' : 'text-gray-600'}>
+                        {format.toUpperCase()}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-                <div className="flex flex-col">
-                  <label className="text-gray-700 text-[12px] font-semibold mb-2">Year</label>
+              </div>
+
+              {/* Type Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Report Period</label>
+                <div className="grid grid-cols-2 gap-4">
+                  {["monthly", "annual"].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setReportType(type)}
+                      className={`p-4 rounded-lg border-2 transition-all
+                        ${reportType === type 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-blue-200'}`}
+                    >
+                      <div className="flex items-center justify-center">
+                        <FiCalendar className={`w-6 h-6 mr-2 ${reportType === type ? 'text-blue-600' : 'text-gray-400'}`} />
+                        <span className={reportType === type ? 'text-blue-600 font-medium' : 'text-gray-600'}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Date Inputs */}
+              <div className="grid grid-cols-2 gap-4">
+                {reportType === "monthly" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="12"
+                      value={month}
+                      onChange={(e) => setMonth(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="MM"
+                    />
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
                   <input
                     type="number"
                     value={year}
+                    min="2000"
+                    max={new Date().getFullYear()}
                     onChange={(e) => setYear(e.target.value)}
-                    className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    placeholder="Enter Year"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="YYYY"
                   />
                 </div>
               </div>
-            )}
 
-            {reportType === "annual" && (
-              <div className="flex flex-col">
-                <label className="text-gray-700 font-semibold mb-2">Year</label>
-                <input
-                  type="number"
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                  placeholder="Enter Year"
-                />
-              </div>
-            )}
+              {/* Generate Button */}
+              <button
+                onClick={handleReportGeneration}
+                disabled={loading || !reportFormat || !reportType || !year}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center disabled:opacity-50"
+              >
+                {loading ? (
+                  <Loader className="w-5 h-5 text-white" />
+                ) : (
+                  <>
+                    <FiDownloadCloud className="mr-2" />
+                    Generate Report
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-
-          <div className="flex justify-center">
-            <button
-              onClick={handleReportGeneration}
-              className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition"
-            >
-              Generate Report
-            </button>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
+      </div>
     </div>
   );
 }

@@ -29,25 +29,25 @@ const VirtualizedTab = ({ items, onDownload }) => (
               key={index}
               className={`border-t border-gray-300 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-gray-100`}
             >
-              <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
+              <td className="py-3 text-[12px] font-semibold text-green-600 px-5">
                 {item?.product === "Unknown" ? "Beans" : item?.product}
               </td>
-              <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
+              <td className="py-3 text-[12px] font-semibold text-blue-800 px-5">
                 {item?.entryDate}
               </td>
-              <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
+              <td className="py-3 text-[12px] font-semibold text-green-600 px-5">
                 {item?.truck}
               </td>
-              <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
+              <td className="py-3 text-[12px] font-semibold text-blue-800 px-5">
                 {item?.originDestination}
               </td>
-              <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
+              <td className="py-3 text-[12px] font-semibold text-green-600 px-5">
                 {item?.entry !== undefined ? parseFloat(item?.entry).toFixed(2) : 'N/A'}
               </td>
-              <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
+              <td className="py-3 text-[12px] font-semibold text-orange-700 px-5">
                 {item?.dispatched !== undefined ? parseFloat(item?.dispatched).toFixed(2) : 'N/A'}
               </td>
-              <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
+              <td className="py-3 text-[12px] font-semibold text-red-600 px-5">
                 {item?.balance !== undefined ? parseFloat(item?.balance).toFixed(2) : 'N/A'}
               </td>
               <td className="py-3 text-[12px] font-semibold text-gray-800 px-5">
@@ -106,7 +106,7 @@ const TabsWithVirtualizedData = () => {
         queryParams.append('year', finalYear);
 
         const response = await fetch(
-            `http://localhost:5000/myStock${endpointMap[tab]}?${queryParams.toString()}`, // Append query parameters
+            `https://stock-managment-2.onrender.com/myStock${endpointMap[tab]}?${queryParams.toString()}`, // Append query parameters
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -162,7 +162,7 @@ const TabsWithVirtualizedData = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/myStock/reports/monthly/word?${queryParams.toString()}`,{
+        `https://stock-managment-2.onrender.com/myStock/reports/monthly/word?${queryParams.toString()}`,{
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
