@@ -1,0 +1,63 @@
+.messaging-app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #0f172a;
+    color: #fff;
+  }
+  
+  .tab-bar {
+    display: flex;
+    background: #1e293b;
+    padding: 0.5rem;
+  }
+  
+  .tab-item {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+  }
+  
+  .tab-item.active {
+    color: #38bdf8;
+    border-bottom: 3px solid #38bdf8;
+  }
+  
+  .messages-list {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: #0f172a;
+  }
+  
+  .message-container {
+    margin: 1rem 0;
+  }
+  
+  .message-bubble {
+    max-width: 70%;
+    padding: 1rem;
+    border-radius: 1.25rem;
+    background: #1e293b;
+  }
+  
+  .outgoing .message-bubble {
+    background: #38bdf8;
+    margin-left: auto;
+  }
+  
+  .message-input-container {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #1e293b;
+  }
+  
+  /* Add more styles for animations and responsive design */

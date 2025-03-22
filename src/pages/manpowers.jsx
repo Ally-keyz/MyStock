@@ -82,7 +82,7 @@ const RequestManpower = () => {
         body: JSON.stringify({ number: numberNeeded, action: processType, date: processDate }),
       });
       if (response.ok) {
-        triggerNotification('Manpower request submitted successfully!');
+        triggerNotification('Manpower request submitted successfully!',"bg-green-600");
         // Clear the form
         setNumberNeeded('');
         setProcessType('');
@@ -265,9 +265,9 @@ const RequestManpower = () => {
                           {new Date(req.date).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4">
-                          {req.approval === true ?                           <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
+                          {req.approval === true ? <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm">
                             Approved
-                          </span> :                           <span className="px-3 py-1 rounded-full bg-red-200 text-green-800 text-sm">
+                          </span> : <span className="px-3 py-1 rounded-full bg-red-200 text-green-800 text-sm">
                             Pending
                           </span> }
 
@@ -306,20 +306,6 @@ const RequestManpower = () => {
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Chart Section */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Requests Distribution</h2>
-            <div className="w-full overflow-x-auto">
-              <BarChart width={730} height={250} data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="numberNeeded" fill="#4F46E5" />
-              </BarChart>
             </div>
           </div>
         </div>

@@ -185,18 +185,18 @@ function Stock() {
                         <div className="text-blue-500 text-[20px] font-semibold">Stock Position Summary</div>
                         <button 
                             onClick={fetchStockPosition}
-                            className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm"
+                            className="px-3 py-1 bg-gray-200 text-white rounded hover:bg-gray-500 text-sm"
                         >
                             Refresh
                         </button>
                     </div>
                     {stockPosition ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-10">
                             {/* Summary Cards */}
                             {[
                                 { title: 'Total Balance', value: stockPosition.totalBalance, color: 'blue' },
-                                { title: 'Total Entry', value: stockPosition.totalEntry, color: 'green' },
-                                { title: 'Total Dispatched', value: stockPosition.totalDispatched, color: 'red' },
+                                { title: 'Total Entry', value: stockPosition.totalEntry, color: 'blue' },
+                                { title: 'Total Dispatched', value: stockPosition.totalDispatched, color: 'blue' },
                                 
                             ].map((metric, index) => (
                                 <div key={index} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
@@ -220,7 +220,7 @@ function Stock() {
                 <div className="w-full scrollbar-custom mt-20 shadow-md overflow-auto rounded-t-md">
     <table className="w-full text-center text-[14px] text-gray-800">
       <thead>
-        <tr className="bg-gradient-to-r from-gray-400 to-gray-400 font-extrabold text-[13px] text-white">
+        <tr className="bg-gradient-to-r from-blue-400 to-blue-400 font-extrabold text-[13px] text-white">
           {headers.map((header) => (
             <th 
               key={header}

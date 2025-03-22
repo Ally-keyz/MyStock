@@ -183,13 +183,13 @@ const systemCount = notifications.filter(n => n.type === 'system').length;
   return (
     <>                                         {/* Notification */}
 
-    <div className="flex h-screen">
+    <div className={`flex h-full transition-all duration-1000 ${darkMode ? 'bg-zinc-800' : 'bg-white'}`}>
       {/* Left Sidebar */}
 
       <div className="p-3">
-        <div className={`fixed z-20 h-full overflow-auto scrollbar-custom rounded-md bg-gray-500  shadow-sm text-white flex flex-col pt-10 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-[200px]'} md:relative md:translate-x-0 w-[205px]`}>
+        <div className={`fixed z-20 h-screen overflow-auto scrollbar-custom rounded-md bg-blue-300  shadow-sm text-white flex flex-col pt-10 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-[200px]'} md:relative md:translate-x-0 w-[215px]`}>
           <div className="flex justify-center font-bold text-[18px]">
-            <div className="w-[10000px]  flex justify-center items-center text-black text-[13px] h-[80px] p-5 rounded-t-md bg-gray-500   relative top-[-40px]">
+            <div className="w-[10000px]  flex justify-center items-center text-black text-[13px] h-[80px] p-5 rounded-t-md bg-blue-300   relative top-[-40px]">
               <img src={log} className='w-11 h-12 mr-2' alt="" />
               <p className='text-white font-bold text-[20px] '>Ihunikiro </p>
             </div>
@@ -324,7 +324,7 @@ const systemCount = notifications.filter(n => n.type === 'system').length;
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <header className="p-2 bg-white fixed w-full sm:w-[1000px] z-50 flex sm:justify-between justify-around">
+        <header className={`p-2 ${darkMode ? 'bg-zinc-800' : 'bg-white'} fixed w-full sm:w-[1000px] z-50 flex sm:justify-between justify-around`}>
           <div>
             <div className="">
               <h2 className="hidden sm:block text-[16px] text-gray-600 font-bold">
@@ -360,7 +360,7 @@ const systemCount = notifications.filter(n => n.type === 'system').length;
           </button>
         </header>
         <div className="p-4">
-          <main className="flex-1 h-full p-6 border border-zinc-300 rounded-md shadow-md overflow-auto mt-[100px] max-w-[1000px] scrollbar-custom">
+          <main className={`flex-1 h-full p-6 border border-zinc-300 ${darkMode ? 'bg-zinc-800' : 'bg-none'} rounded-md shadow-md overflow-auto mt-[100px] max-w-[1000px] scrollbar-custom`}>
             {children}
           </main>
         </div>

@@ -38,6 +38,7 @@ const FumigationManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 5;
+  const [color,setColor] = useState("bg-red-500")
 
   // States for report download modal
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -46,9 +47,10 @@ const FumigationManagement = () => {
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
 
   // Notification handling
-  const triggerNotification = (msg) => {
+  const triggerNotification = (msg,color) => {
     setNotificationMessage(msg);
     setShowNotification(true);
+    setColor(color);
   };
 
   const handleNotificationClose = () => {
@@ -174,6 +176,7 @@ const FumigationManagement = () => {
     try {
       const token = localStorage.getItem("ACCESS_TOKEN");
       const id = selectedProduct._id;
+      console.log(fumigationDate,selectedProduct.value,fumigantName,fumigantQuantity,`id ${id}`);
       const response = await fetch(`https://stock-managment-2.onrender.com/fumigants/fumigation/${id}`, {
         method: 'POST',
         headers: {
@@ -189,7 +192,7 @@ const FumigationManagement = () => {
       });
 
       if (response.ok) {
-        triggerNotification('Fumigation recorded successfully!');
+        triggerNotification('Fumigation recorded successfully!','bg-green-600');
         setShowFumigationModal(false);
         await fetchProducts();
         resetForm();
@@ -197,7 +200,7 @@ const FumigationManagement = () => {
         triggerNotification('Failed to make fumigation');
       }
     } catch (error) {
-      triggerNotification('Error submitting fumigation');
+      triggerNotification('Error submitting fumigation',error.message);
       console.log(error.message);
     } finally {
       setIsLoading(false);
@@ -230,7 +233,7 @@ const FumigationManagement = () => {
         }),
       });
       if (response.ok) {
-        triggerNotification('Fumigant added successfully!');
+        triggerNotification('Fumigant added successfully!',"bg-green-600");
         handleFindFumigants();
         setNewFumigantName('');
         setNewFumigantQuantity('');
@@ -358,7 +361,7 @@ const FumigationManagement = () => {
                 </div>
                 <div className="pt-4">
                   <button
-                    type="submit"
+                    onClick={handleNewFumigantSubmit}
                     className="px-6 py-2 bg-blue-500 text-white text-[14px] font-semibold rounded-lg hover:bg-blue-600 transition-colors"
                     disabled={isSubmittingFumigant}
                   >
@@ -375,7 +378,8 @@ const FumigationManagement = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entered Quantity</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Quantity</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Entry</th>
                     </tr>
                   </thead>
@@ -385,6 +389,7 @@ const FumigationManagement = () => {
                         <tr key={index}>
                           <td className="px-6 py-4">{fumigant.name}</td>
                           <td className="px-6 py-4">{fumigant.quantity}</td>
+                          <td className="px-6 py-4">{fumigant.remainingFumigants}</td>
                           <td className="px-6 py-4">{formatDate(fumigant.dateEntry)}</td>
                         </tr>
                       ))
@@ -723,6 +728,7 @@ const FumigationManagement = () => {
           message={notificationMessage}
           duration={5000}
           onClose={handleNotificationClose}
+          color={color}
         />
       )}
     </div>
